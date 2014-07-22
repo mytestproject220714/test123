@@ -1,0 +1,16 @@
+.DS_Store
+Thumbs.db
+.modgit/
+app/design/adminhtml/default/find/
+app/design/frontend/default/blank/
+app/design/frontend/default/iphone/
+app/design/frontend/default/modern/
+app/etc/local.xml
+cron.sh
+get.php
+index.php.sample
+var/
+media/
+wp/wp-config.php
+landing/upload/
+.idea/
