@@ -1,0 +1,235 @@
+<?php
+    require_once(Mage::getBaseDir('lib') . '/nusoap/nusoap.php');
+    $wsdl="http://api.rpxholding.com/wsdl/rpxwsdl.php?wsdl";
+    $client =new nusoap_client($wsdl,true);
+    
+    $username = Mage::getStoreConfig('carriers/icube_rpx/username');
+    $password= Mage::getStoreConfig('carriers/icube_rpx/password');
+    $account_number = Mage::getStoreConfig('carriers/icube_rpx/account_number');
+    
+    $result = $client->call('getDestination', array('user' => $username, 'password' => $password));
+    $citys = simplexml_load_string($result);
+    //print_r($citys);
+?>
+<?php
+/**
+ * aheadWorks Co.
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the EULA
+ * that is bundled with this package in the file LICENSE.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://ecommerce.aheadworks.com/AW-LICENSE.txt
+ *
+ * =================================================================
+ *                 MAGENTO EDITION USAGE NOTICE
+ * =================================================================
+ * This software is designed to work with Magento community edition and
+ * its use on an edition other than specified is prohibited. aheadWorks does not
+ * provide extension support in case of incorrect edition use.
+ * =================================================================
+ *
+ * @category   AW
+ * @package    AW_Onestepcheckout
+ * @version    1.2.5
+ * @copyright  Copyright (c) 2010-2012 aheadWorks Co. (http://www.aheadworks.com)
+ * @license    http://ecommerce.aheadworks.com/AW-LICENSE.txt
+ */
+?><div id="aw-onestepcheckout-address-shipping">
+    <div class="form-list">
+        <?php if ($this->customerHasAddresses()): ?>
+            <div class="aw-onestepcheckout-general-form-field shipping-address">
+				<h3><?php echo $this->__("Shipping Address") ?></h3>
+                <div class="input-box">
+                    <?php echo $this->getAddressesHtmlSelect('shipping') ?>
+                </div>
+				<address class="dynamic-customer-shipping-address">
+					<!-- <label><?php echo $this->escapeHtml($this->getAddress()->getFirstname()) ?> <?php echo $this->escapeHtml($this->getAddress()->getLastname()) ?></label>
+					<label><?php echo $this->escapeHtml($this->getAddress()->getStreet(1)) ?></label>
+					<?php for ($_i = 2, $_n = $this->helper('customer/address')->getStreetLines(); $_i <= $_n; $_i++): ?>
+						<label><?php echo $this->escapeHtml($this->getAddress()->getStreet($_i)) ?></label>
+					<?php endfor; ?>
+					<label>
+						<?php $arrCityValue = explode('-', $this->escapeHtml($this->getAddress()->getCity())); ?>
+						<?php echo $arrCityValue[1] ? $arrCityValue[1] : $this->escapeHtml($this->getAddress()->getCity()); ?>
+					</label>
+					<label><?php echo $this->escapeHtml($this->getAddress()->getRegion()) ?></label>
+					<label><?php echo $this->escapeHtml($this->getAddress()->getPostcode()) ?></label>
+					<label><?php echo $this->escapeHtml($this->getAddress()->getCountry()) ?></label>
+					<div class="clear"></div> -->
+				</address>
+				<script>
+				$j(document).ready(function(){
+					function changeShippingAddr(){
+						if($j("select[name='shipping_address_id']").val()){
+							var shippingAddressText = $j("select[name='shipping_address_id'] option:selected").text();
+							var arrShippingAddress = [];
+							arrShippingAddress = shippingAddressText.split(",");
+							var shippingAddressHtml = "";
+							if(arrShippingAddress.length > 0)
+								for(var k = 0; k < arrShippingAddress.length; k++)
+									shippingAddressHtml = shippingAddressHtml+"<label>"+arrShippingAddress[k]+"</label>";
+							shippingAddressHtml = shippingAddressHtml+"<div class='clear'></div>";
+							$j(".dynamic-customer-shipping-address").html(shippingAddressHtml);
+						}
+					}
+					if($j("select[name='shipping_address_id']").val()) changeShippingAddr();
+					$j("select[name='shipping_address_id']").change(function(){
+						changeShippingAddr();
+					});
+				});
+				</script>
+                <div style="clear:both;"></div>
+            </div>
+        <?php endif; ?>
+        <div id="aw-onestepcheckout-shipping-address-list"<?php if ($this->customerHasAddresses()): ?> style="display:none;overflow: hidden;height: 0px;"<?php endif; ?>>
+            <h3><?php echo $this->__("Add New Address") ?></h3>
+			<div class="customer-name">
+                <?php echo $this->getCustomerWidgetName()->toHtml(); ?>
+                <div style="clear:both"></div>
+            </div>
+            <?php if ($this->getConfig()->isCompany()): ?>
+            <div class="aw-onestepcheckout-general-form-field aw-onestepcheckout-general-form-field-wide">
+                <label for="shipping:company"><?php echo $this->__('Company') ?></label>
+                <div class="input-box">
+                    <input type="text" id="shipping:company" name="shipping[company]" title="<?php echo $this->__('Company') ?>" class="input-text <?php echo $this->getAttributeValidationClass('company') ?>" value="<?php echo $this->getDataFromSession('company'); ?>" />
+                </div>
+            </div>
+            <?php endif; ?>
+            <div style="clear:both;"></div>
+            <?php $_streetValidationClass = $this->getAttributeValidationClass('street'); ?>
+            <?php $streetValues = $this->getDataFromSession('street'); ?>
+            <div class="aw-onestepcheckout-general-form-field aw-onestepcheckout-general-form-field-wide">
+                <label for="shipping:street1" class="required"><em>*</em><?php echo $this->__('Address') ?></label>
+                <div class="input-box">
+                    <input type="text" title="<?php echo $this->__('Street Address') ?>" name="shipping[street][]" id="shipping:street1" class="input-text <?php echo $_streetValidationClass ?>" value="<?php echo (isset($streetValues[0]))? $streetValues[0] : '' ;?>" />
+                </div>
+                <div style="clear:both"></div>
+            </div>
+            <?php $_streetValidationClass = trim(str_replace('required-entry', '', $_streetValidationClass)); ?>
+            <?php for ($_i = 2, $_n = $this->helper('customer/address')->getStreetLines(); $_i <= $_n; $_i++): ?>
+                <div class="aw-onestepcheckout-general-form-field aw-onestepcheckout-general-form-field-wide">
+                    <div class="input-box">
+                        <input type="text" title="<?php echo $this->__('Street Address %s', $_i) ?>" name="shipping[street][]" id="shipping:street<?php echo $_i ?>" class="address-additional input-text <?php echo $_streetValidationClass ?>" value="<?php echo (isset($streetValues[$_i - 1]))? $streetValues[$_i - 1] : '' ;?>" />
+                    </div>
+                    <div style="clear:both"></div>
+                </div>
+            <?php endfor; ?>
+            <?php if ($this->isVatAttributeVisible()) : ?>
+                <div class="aw-onestepcheckout-general-form-field aw-onestepcheckout-general-form-field-wide">
+                    <label for="shipping:vat_id"><?php echo $this->__('VAT Number') ?></label>
+                    <div class="input-box">
+                        <input type="text" id="shipping:vat_id" name="shipping[vat_id]" title="<?php echo $this->__('VAT Number') ?>" class="input-text <?php echo $this->getAttributeValidationClass('vat_id'); ?>" value="<?php echo $this->getDataFromSession('vat_id'); ?>" />
+                    </div>
+                    <div style="clear:both"></div>
+                </div>
+            <?php endif; ?>
+            <div class="aw-onestepcheckout-general-form-field aw-onestepcheckout-general-form-field-wide">
+                <label for="shipping:city" class="required"><em>*</em><?php echo $this->__('City') ?></label>
+                <div class="input-box shipping-address-select-city">
+		    <input type="text" title="<?php echo $this->__('City') ?>" name="shipping[city]" class="input-text <?php echo $this->getAttributeValidationClass('city') ?>" id="shipping:city" value="<?php echo $this->getDataFromSession('city') ?>" />
+					<select name="shipping[city]" title="<?php echo $this->__('City') ?>" id="shipping:city" onchange="shipping.setSameAsBilling(false);">
+						<?php foreach($citys->DATA as $city): ?>
+						<?php
+						    $arrCityValue = explode('-', $city->DESTINATION);
+						    $cityCode = $arrCityValue[0];
+						    $cityName = $arrCityValue[1];
+						?>
+							<option value="<?php echo $cityName ?>" <?php if($this->escapeHtml($this->getAddress()->getCity()) == $cityName) echo "selected" ?>>
+								<?php echo $cityName ?>
+							</option>
+						<?php endforeach; ?>
+					</select>
+				</div>
+                <div style="clear:both"></div>
+            </div>
+            <div class="aw-onestepcheckout-general-form-field aw-onestepcheckout-general-form-field-wide">
+                <label for="shipping:country_id" class="required"><em>*</em><?php echo $this->__('Country') ?></label>
+                <div class="input-box shipping-address-select-country">
+                    <?php echo $this->getCountryHtmlSelect('shipping') ?>
+                </div>
+                <div style="clear:both"></div>
+            </div>
+            <div class="aw-onestepcheckout-general-form-field aw-onestepcheckout-general-form-field-right">
+                <label for="shipping:region_id" class="required"><em>*</em><?php echo $this->__('State/Province') ?></label>
+                <div class="input-box">
+		    <select id="shipping:region_id" name="shipping[region_id]" title="<?php echo $this->__('State/Province') ?>" class="validate-select" style="display:none;">
+                         <option value=""><?php echo $this->__('Please select region, state or province') ?></option>
+                     </select>
+                     <input type="text" id="shipping:region" name="shipping[region]" title="<?php echo $this->__('State/Province') ?>" class="input-text <?php echo $this->getAttributeValidationClass('region') ?>" style="display:none;"  value="<?php echo $this->getDataFromSession('region') ?>" />
+                     <script type="text/javascript">
+                         //<![CDATA[
+                         $('shipping:region_id').setAttribute('defaultValue',  "<?php echo $this->getDataFromSession('region_id') ?>");
+                         var shippingRegionUpdater = new RegionUpdater('shipping:country_id', 'shipping:region', 'shipping:region_id', <?php echo $this->helper('directory')->getRegionJson() ?>, undefined, 'shipping:postcode');
+                         //]]>
+                     </script>
+                </div>
+                <div style="clear:both"></div>
+            </div>
+            <div style="clear:both"></div>
+            <div class="aw-onestepcheckout-general-form-field aw-onestepcheckout-general-form-field-left">
+                <label for="shipping:postcode" class="required"><em>*</em><?php echo $this->__('Zip/Postal Code') ?></label>
+                <div class="input-box">
+                    <input type="text" title="<?php echo $this->__('Zip/Postal Code') ?>" name="shipping[postcode]" id="shipping:postcode" class="input-text validate-zip-international <?php echo $this->getAttributeValidationClass('postcode') ?>" value="<?php echo $this->getDataFromSession('postcode') ?>" />
+                </div>
+                <div style="clear:both"></div>
+            </div>
+            <div class="aw-onestepcheckout-general-form-field aw-onestepcheckout-general-form-field-left">
+                <label for="shipping:telephone" class="required"><em>*</em><?php echo $this->__('Telephone') ?></label>
+                <div class="input-box">
+                    <input type="text" name="shipping[telephone]" title="<?php echo $this->__('Telephone') ?>" class="input-text <?php echo $this->getAttributeValidationClass('telephone') ?>" id="shipping:telephone" value="<?php echo $this->getDataFromSession('telephone'); ?>" />
+                </div>
+                <div style="clear:both"></div>
+            </div>
+            <?php if ($this->getConfig()->isFax()): ?>
+            <div class="aw-onestepcheckout-general-form-field aw-onestepcheckout-general-form-field-right">
+                <label for="shipping:fax"><?php echo $this->__('Fax') ?></label>
+                <div class="input-box">
+                    <input type="text" name="shipping[fax]" title="<?php echo $this->__('Fax') ?>" class="input-text <?php echo $this->getAttributeValidationClass('fax') ?>" id="shipping:fax" value="<?php echo $this->getDataFromSession('fax'); ?>" />
+                </div>
+                <div style="clear:both"></div>
+            </div>
+            <?php endif; ?>
+            <div style="clear:both"></div>
+            <div class="aw-onestepcheckout-general-form-field aw-onestepcheckout-general-form-field-wide">
+                <?php echo $this->getEnterpriseAddressAttributesHtml(); ?>
+            </div>
+            <div style="clear:both;"></div>
+            <?php if ($this->isCustomerLoggedIn() && $this->customerHasAddresses()): ?>
+                <div class="aw-onestepcheckout-general-form-field">
+                    <div class="control">
+                        <input type="checkbox" name="shipping[save_in_address_book]" value="1" title="<?php echo $this->__('Save in address book') ?>" id="shipping:save_in_address_book"<?php if ($this->getDataFromSession('save_in_address_book')):?> checked="checked"<?php endif; ?> class="checkbox" />
+                        <label for="shipping:save_in_address_book"><?php echo $this->__('Save in address book') ?></label>
+                    </div>
+                    <div style="clear:both"></div>
+                </div>
+            <?php else: ?>
+                <div class="no-display"><input type="hidden" name="shipping[save_in_address_book]" value="1" /></div>
+            <?php endif; ?>
+        </div>
+    </div>
+    <?php echo $this->getChildHtml('extra');?>
+</div>
+<script type="text/javascript">
+    $j(document).ready(function(){
+		if($j(".shipping-address-select-country select").val() == "ID"){
+			$j(".shipping-address-select-city select").show();$j(".shipping-address-select-city select").attr("name","shipping[city]");
+			$j(".shipping-address-select-city input.input-text").hide();$j(".shipping-address-select-city input.input-text").attr("name","shippingcityblank");
+		}
+		else{
+			$j(".shipping-address-select-city select").hide();$j(".shipping-address-select-city select").attr("name","shippingcityblank");
+			$j(".shipping-address-select-city input.input-text").show();$j(".shipping-address-select-city input.input-text").attr("name","shipping[city]");
+		}
+		$j(".shipping-address-select-country select").change(function(){
+			if($j(this).val() == "ID"){
+				$j(".shipping-address-select-city .selector").show();$j(".shipping-address-select-city select").attr("name","shipping[city]");
+				$j(".shipping-address-select-city input.input-text").hide();$j(".shipping-address-select-city input.input-text").attr("name","shippingcityblank");
+			}
+			else{
+				$j(".shipping-address-select-city .selector").hide();$j(".shipping-address-select-city select").attr("name","shippingcityblank");
+				$j(".shipping-address-select-city input.input-text").show();$j(".shipping-address-select-city input.input-text").attr("name","shipping[city]");
+			}
+		});
+	});
+</script>

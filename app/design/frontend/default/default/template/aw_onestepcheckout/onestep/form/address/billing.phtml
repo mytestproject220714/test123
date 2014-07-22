@@ -1,0 +1,311 @@
+<?php
+    require_once(Mage::getBaseDir('lib') . '/nusoap/nusoap.php');
+    $wsdl="http://api.rpxholding.com/wsdl/rpxwsdl.php?wsdl";
+    $client =new nusoap_client($wsdl,true);
+    
+    $username = Mage::getStoreConfig('carriers/icube_rpx/username');
+    $password= Mage::getStoreConfig('carriers/icube_rpx/password');
+    $account_number = Mage::getStoreConfig('carriers/icube_rpx/account_number');
+    
+    $result = $client->call('getDestination', array('user' => $username, 'password' => $password));
+    $citys = simplexml_load_string($result);
+    //print_r($citys);
+?>
+<?php
+/**
+ * aheadWorks Co.
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the EULA
+ * that is bundled with this package in the file LICENSE.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://ecommerce.aheadworks.com/AW-LICENSE.txt
+ *
+ * =================================================================
+ *                 MAGENTO EDITION USAGE NOTICE
+ * =================================================================
+ * This software is designed to work with Magento community edition and
+ * its use on an edition other than specified is prohibited. aheadWorks does not
+ * provide extension support in case of incorrect edition use.
+ * =================================================================
+ *
+ * @category   AW
+ * @package    AW_Onestepcheckout
+ * @version    1.2.5
+ * @copyright  Copyright (c) 2010-2012 aheadWorks Co. (http://www.aheadworks.com)
+ * @license    http://ecommerce.aheadworks.com/AW-LICENSE.txt
+ */
+?><div id="aw-onestepcheckout-address-billing">
+    <div class="form-list">
+        <?php if ($this->customerHasAddresses()): ?>
+            <div class="aw-onestepcheckout-general-form-field billing-address">
+				<h3><?php echo $this->__("Billing Address") ?></h3>
+                <div class="input-box">
+                    <?php echo $this->getAddressesHtmlSelect('billing') ?>
+                </div>
+				<address class="dynamic-customer-billing-address">
+					<!-- <label><?php echo $this->escapeHtml($this->getAddress()->getFirstname()) ?> <?php echo $this->escapeHtml($this->getAddress()->getLastname()) ?></label>
+					<label><?php echo $this->escapeHtml($this->getAddress()->getStreet(1)) ?></label>
+					<?php for ($_i = 2, $_n = $this->helper('customer/address')->getStreetLines(); $_i <= $_n; $_i++): ?>
+						<label><?php echo $this->escapeHtml($this->getAddress()->getStreet($_i)) ?></label>
+					<?php endfor; ?>
+					<label>
+						<?php $arrCityValue = explode('-', $this->escapeHtml($this->getAddress()->getCity())); ?>
+						<?php echo $arrCityValue[1] ? $arrCityValue[1] : $this->escapeHtml($this->getAddress()->getCity()); ?>
+					</label>
+					<label><?php echo $this->escapeHtml($this->getAddress()->getRegion()) ?></label>
+					<label><?php echo $this->escapeHtml($this->getAddress()->getPostcode()) ?></label>
+                    <label><?php echo $this->escapeHtml($this->getAddress()->getCountry()) ?></label>
+                    <label><?php echo $this->escapeHtml($this->__("T: ").$this->getAddress()->getTelephone()) ?></label>
+					<div class="clear"></div> -->
+				</address>
+				<script>
+				$j(document).ready(function(){
+					function changeBillingAddr(){
+						if($j("select[name='billing_address_id']").val()){
+							var billingAddressText = $j("select[name='billing_address_id'] option:selected").text();
+							var arrBillingAddress = [];
+							arrBillingAddress = billingAddressText.split(",");
+							var billingAddressHtml = "";
+							if(arrBillingAddress.length > 0)
+								for(var i = 0; i < arrBillingAddress.length; i++)
+									billingAddressHtml = billingAddressHtml+"<label>"+arrBillingAddress[i]+"</label>";
+							billingAddressHtml = billingAddressHtml+"<div class='clear'></div>";
+							$j(".dynamic-customer-billing-address").html(billingAddressHtml);
+						}
+					}
+					if($j("select[name='billing_address_id']").val()) changeBillingAddr();
+					$j("select[name='billing_address_id']").change(function(){
+						changeBillingAddr();
+					});
+				});
+				</script>
+                <div style="clear:both;"></div>
+            </div>
+        <?php endif; ?>
+        <div id="aw-onestepcheckout-billing-address-list"<?php if ($this->customerHasAddresses()): ?> style="overflow: hidden;height: 0px;display:none"<?php endif; ?>>
+            <h3><?php echo $this->__("Add New Address") ?></h3>
+			<div class="customer-name">
+                <?php echo $this->getCustomerWidgetName()->toHtml(); ?>
+                <div style="clear:both"></div>
+            </div>
+            <?php if(!$this->isCustomerLoggedIn()): ?>
+                <?php $_dateOfBirthWidget = $this->getCustomerWidgetDateOfBirth(); ?>
+                <?php if ($_dateOfBirthWidget->isEnabled()): ?>
+                    <div class="aw-onestepcheckout-general-form-field aw-onestepcheckout-general-form-field-wide">
+                        <?php echo $_dateOfBirthWidget->toHtml() ?>
+                        <div style="clear:both;"></div>
+                    </div>
+                <?php endif; ?>
+                <?php $_genderWidget = $this->getCustomerWidgetGender(); ?>
+                <?php if ($_genderWidget->isEnabled()): ?>
+                    <div class="aw-onestepcheckout-general-form-field aw-onestepcheckout-general-form-field-wide">
+                        <?php echo $_genderWidget->toHtml() ?>
+                        <div style="clear:both;"></div>
+                    </div>
+                <?php endif ?>
+                <div class="aw-onestepcheckout-general-form-field aw-onestepcheckout-general-form-field-wide">
+                    <?php echo $this->getEnterpriseCustomerAttributesHtml(); ?>
+                </div>
+                <?php if ($this->isTaxvatEnabled()): ?>
+                    <div class="aw-onestepcheckout-general-form-field aw-onestepcheckout-general-form-field-wide">
+                        <?php echo $this->getTaxvatHtml() ?>
+                        <div style="clear:both;"></div>
+                    </div>
+                <?php endif; ?>
+            <?php endif; ?>
+            <?php if (!$this->isCustomerLoggedIn()) : ?>
+                <div class="aw-onestepcheckout-general-form-field aw-onestepcheckout-general-form-field-wide">
+                    <label for="billing:email" class="required"><em>*</em><?php echo $this->__('Email') ?></label>
+                    <div class="input-box">
+                        <input type="text" name="billing[email]" id="billing:email" title="<?php echo $this->__('Email') ?>" class="input-text validate-email required-entry" value="<?php echo $this->getDataFromSession('email'); ?>" />
+                    </div>
+                    <div style="clear:both;"></div>
+                </div>
+                <div class="aw-onestepcheckout-general-form-field">
+                    <div class="control">
+                        <?php if ($this->customerMustBeRegistered()): ?>
+                        <input type="checkbox" name="billing[create_account]" value="1" title="<?php echo $this->__('Create Account') ?>" id="billing:create_account" class="checkbox"<?php if ($this->getDataFromSession('create_account')):?> checked="checked"<?php endif; ?>/><label for="billing:create_account" class="create-account"><?php echo $this->__('Create Account') ?></label>
+                        <?php else: ?>
+                            <input type="hidden" name="billing[create_account]" value="1" id="billing:create_account" />
+                        <?php endif ?>
+                    </div>
+                    <div style="clear:both;"></div>
+                </div>
+                <div style="clear:both"></div>
+                <div id="aw-osc-billing-password-area" style="overflow: hidden;<?php if (!$this->getDataFromSession('create_account') && $this->customerMustBeRegistered()):?>height: 0px;display:none<?php endif; ?>">
+                    <div class="aw-onestepcheckout-general-form-field aw-onestepcheckout-general-form-field-left">
+                        <label for="billing:customer_password" class="required"><em>*</em><?php echo $this->__('Password') ?></label>
+                        <div class="input-box">
+                            <input type="password" name="billing[customer_password]" id="billing:customer_password" title="<?php echo $this->__('Password') ?>" class="input-text required-entry validate-password" />
+                        </div>
+                        <div style="clear:both;"></div>
+                    </div>
+                    <div class="aw-onestepcheckout-general-form-field aw-onestepcheckout-general-form-field-right">
+                        <label for="billing:confirm_password" class="required"><em>*</em><?php echo $this->__('Confirm Password') ?></label>
+                        <div class="input-box">
+                            <input type="password" name="billing[confirm_password]" title="<?php echo $this->__('Confirm Password') ?>" id="billing:confirm_password" class="input-text required-entry validate-cpassword" />
+                        </div>
+                        <div style="clear:both;"></div>
+                    </div>
+                    <div style="clear:both"></div>
+                </div>
+            <?php endif; ?>
+            <?php if ($this->getConfig()->isCompany()): ?>
+            <div class="aw-onestepcheckout-general-form-field aw-onestepcheckout-general-form-field-wide">
+                <label for="billing:company"><?php echo $this->__('Company') ?></label>
+                <div class="input-box">
+                    <input type="text" id="billing:company" name="billing[company]" title="<?php echo $this->__('Company') ?>" class="input-text <?php echo $this->getAttributeValidationClass('company') ?>" value="<?php echo $this->getDataFromSession('company'); ?>" />
+                </div>
+				<div style="clear:both"></div>
+            </div>
+            <?php endif; ?>
+            <div style="clear:both;"></div>
+            <?php $_streetValidationClass = $this->getAttributeValidationClass('street'); ?>
+            <?php $streetValues = $this->getDataFromSession('street'); ?>
+            <div class="aw-onestepcheckout-general-form-field aw-onestepcheckout-general-form-field-wide">
+                <label for="billing:street1" class="required"><em>*</em><?php echo $this->__('Address') ?></label>
+                <div class="input-box">
+                    <input type="text" title="<?php echo $this->__('Street Address') ?>" name="billing[street][]" id="billing:street1" class="input-text <?php echo $_streetValidationClass ?>" value="<?php echo (isset($streetValues[0]))? $streetValues[0] : '' ;?>" />
+                </div>
+                <div style="clear:both;"></div>
+            </div>
+            <?php $_streetValidationClass = trim(str_replace('required-entry', '', $_streetValidationClass)); ?>
+            <?php for ($_i = 2, $_n = $this->helper('customer/address')->getStreetLines(); $_i <= $_n; $_i++): ?>
+                <div class="aw-onestepcheckout-general-form-field aw-onestepcheckout-general-form-field-wide">
+                    <div class="input-box">
+                        <input type="text" title="<?php echo $this->__('Street Address %s', $_i) ?>" name="billing[street][]" id="billing:street<?php echo $_i ?>" class="address-additional input-text <?php echo $_streetValidationClass ?>" value="<?php echo (isset($streetValues[$_i - 1]))? $streetValues[$_i - 1] : '' ;?>" />
+                    </div>
+                    <div style="clear:both;"></div>
+                </div>
+            <?php endfor; ?>
+            <?php if ($this->isVatAttributeVisible()) : ?>
+                <div class="aw-onestepcheckout-general-form-field aw-onestepcheckout-general-form-field-wide">
+                    <label for="billing:vat_id"><?php echo $this->__('VAT Number') ?></label>
+                    <div class="input-box">
+                        <input type="text" id="billing:vat_id" name="billing[vat_id]" title="<?php echo $this->__('VAT Number') ?>" class="input-text <?php echo $this->getAttributeValidationClass('vat_id'); ?>" value="<?php echo $this->getDataFromSession('vat_id'); ?>" />
+                    </div>
+                    <div style="clear:both;"></div>
+                </div>
+            <?php endif; ?>
+            <div class="aw-onestepcheckout-general-form-field aw-onestepcheckout-general-form-field-wide">
+                <label for="billing:city" class="required"><em>*</em><?php echo $this->__('City') ?></label>
+                <div class="input-box billing-address-select-city">
+					<select name="billing[city]" id="billing:city" title="<?php echo $this->__('City') ?>">
+						<?php foreach($citys->DATA as $city): ?>
+						<?php
+						    $arrCityValue = explode('-', $city->DESTINATION);
+						    $cityCode = $arrCityValue[0];
+						    $cityName = $arrCityValue[1];
+						?>
+						<option value="<?php echo $cityName ?>" <?php if($this->escapeHtml($this->getAddress()->getCity()) == $cityName) echo "selected" ?>>
+								<?php echo $cityName ?>
+							</option>
+						<?php endforeach; ?>
+					</select>
+					<input type="text" title="<?php echo $this->__('City') ?>" name="billing[city]" class="input-text <?php echo $this->getAttributeValidationClass('city') ?>" id="billing:city" value="<?php echo $this->getDataFromSession('city') ?>" />
+				</div>
+                <div style="clear:both;"></div>
+            </div>
+            <div class="aw-onestepcheckout-general-form-field aw-onestepcheckout-general-form-field-wide">
+                <label for="billing:country_id" class="required"><em>*</em><?php echo $this->__('Country') ?></label>
+                <div class="input-box billing-address-select-country">
+                    <?php echo $this->getCountryHtmlSelect('billing') ?>
+                </div>
+                <div style="clear:both;"></div>
+            </div>
+            <div class="aw-onestepcheckout-general-form-field aw-onestepcheckout-general-form-field-right">
+                <label for="billing:region_id" class="required"><em>*</em><?php echo $this->__('State / Province') ?></label>
+                <div class="input-box">
+		    <select id="billing:region_id" name="billing[region_id]" title="<?php echo $this->__('State/Province') ?>" class="validate-select" style="display:none;">
+                         <option value=""><?php echo $this->__('Please select region, state or province') ?></option>
+                     </select>
+                     <input type="text" id="billing:region" name="billing[region]" title="<?php echo $this->__('State/Province') ?>" class="input-text <?php echo $this->getAttributeValidationClass('region') ?>" style="display:none;" value="<?php echo $this->getDataFromSession('region') ?>" />
+                     <script type="text/javascript">
+                         //<![CDATA[
+                         $('billing:region_id').setAttribute('defaultValue',  "<?php echo $this->getDataFromSession('region_id') ?>");
+                         var billingRegionUpdater = new RegionUpdater('billing:country_id', 'billing:region', 'billing:region_id', <?php echo $this->helper('directory')->getRegionJson() ?>, undefined, 'billing:postcode');
+                         //]]>
+                     </script>
+                </div>
+                <div style="clear:both;"></div>
+            </div>
+            <div style="clear:both"></div>
+            <div class="aw-onestepcheckout-general-form-field aw-onestepcheckout-general-form-field-left">
+                <label for="billing:postcode" class="required"><em>*</em><?php echo $this->__('Postal Code') ?></label>
+                <div class="input-box">
+                    <input type="text" title="<?php echo $this->__('Zip/Postal Code') ?>" name="billing[postcode]" id="billing:postcode" class="input-text validate-zip-international <?php echo $this->getAttributeValidationClass('postcode') ?>" value="<?php echo $this->getDataFromSession('postcode') ?>" />
+                </div>
+                <div style="clear:both;"></div>
+            </div>
+            <div class="aw-onestepcheckout-general-form-field aw-onestepcheckout-general-form-field-left">
+                <label for="billing:telephone" class="required"><em>*</em><?php echo $this->__('Telephone') ?></label>
+                <div class="input-box">
+                    <input type="text" name="billing[telephone]" title="<?php echo $this->__('Telephone') ?>" class="input-text <?php echo $this->getAttributeValidationClass('telephone') ?>" id="billing:telephone" value="<?php echo $this->getAddress()->getTelephone(); ?>" />
+                </div>
+                <div style="clear:both;"></div>
+            </div>
+            <?php if ($this->getConfig()->isFax()): ?>
+            <div class="aw-onestepcheckout-general-form-field aw-onestepcheckout-general-form-field-right">
+                <label for="billing:fax"><?php echo $this->__('Fax') ?></label>
+                <div class="input-box">
+                    <input type="text" name="billing[fax]" title="<?php echo $this->__('Fax') ?>" class="input-text <?php echo $this->getAttributeValidationClass('fax') ?>" id="billing:fax" value="<?php echo $this->getDataFromSession('fax'); ?>" />
+                </div>
+				<div style="clear:both"></div>
+            </div>
+            <?php endif; ?>
+            <div style="clear:both"></div>
+            <div class="aw-onestepcheckout-general-form-field aw-onestepcheckout-general-form-field-wide">
+                <?php echo $this->getEnterpriseAddressAttributesHtml(); ?>
+            </div>
+            <div style="clear:both;"></div>
+            <?php if ($this->isCustomerLoggedIn() && $this->customerHasAddresses()):?>
+                <div class="aw-onestepcheckout-general-form-field">
+                    <div class="control">
+                        <input type="checkbox" name="billing[save_in_address_book]" value="1" title="<?php echo $this->__('Save in address book') ?>" id="billing:save_in_address_book" onchange="if(window.shipping) shipping.setSameAsBilling(false);"<?php if ($this->getDataFromSession('save_in_address_book')):?> checked="checked"<?php endif; ?> class="checkbox" />
+                        <label for="billing:save_in_address_book"><?php echo $this->__('Save in address book') ?></label>
+                    </div>
+                    <div style="clear:both;"></div>
+                </div>
+            <?php else:?>
+                <div class="no-display"><input type="hidden" name="billing[save_in_address_book]" value="1" /></div>
+            <?php endif; ?>
+        </div>
+        <?php if (!$this->isUseBillingAsShipping() && $this->canShip()): ?>
+            <div id="aw-onestepcheckout-billing-use-for-shipping" class="aw-onestepcheckout-general-form-field">
+                <div class="control">
+                    <input type="checkbox" name="billing[use_for_shipping]" value="1" title="<?php echo $this->__('Ship to same address') ?>" id="billing:use_for_shipping" <?php if ($this->isUseBillingAsShippingChecked()):?> checked="checked"<?php endif; ?> class="checkbox" />
+                    <label for="billing:use_for_shipping"><?php echo $this->__('Use Billing Address as Shipping Addresss') ?></label>
+                </div>
+                <div style="clear:both;"></div>
+            </div>
+        <?php else : ?>
+            <div class="no-display"><input type="hidden" name="billing[use_for_shipping]" value="1" /></div>
+        <?php endif; ?>
+    </div>
+    <?php echo $this->getChildHtml('extra');?>
+</div>
+<div class="clear"></div>
+<script type="text/javascript">
+    $j(document).ready(function(){
+		if($j(".billing-address-select-country select").val() == "ID"){
+			$j(".billing-address-select-city select").show();$j(".billing-address-select-city select").attr("name","billing[city]");
+			$j(".billing-address-select-city input.input-text").hide();$j(".billing-address-select-city input.input-text").attr("name","billingcityblank");
+		}
+		else{
+			$j(".billing-address-select-city select").hide();$j(".billing-address-select-city select").attr("name","billingcityblank");
+			$j(".billing-address-select-city input.input-text").show();$j(".billing-address-select-city input.input-text").attr("name","billing[city]");
+		}
+		$j(".billing-address-select-country select").change(function(){
+			if($j(this).val() == "ID"){
+				$j(".billing-address-select-city .selector").show();$j(".billing-address-select-city select").attr("name","billing[city]");
+				$j(".billing-address-select-city input.input-text").hide();$j(".billing-address-select-city input.input-text").attr("name","billingcityblank");
+			}
+			else{
+				$j(".billing-address-select-city .selector").hide();$j(".billing-address-select-city select").attr("name","billingcityblank");
+				$j(".billing-address-select-city input.input-text").show();$j(".billing-address-select-city input.input-text").attr("name","billing[city]");
+			}
+		});
+	});
+</script>

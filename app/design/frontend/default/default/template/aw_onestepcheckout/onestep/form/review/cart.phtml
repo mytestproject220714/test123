@@ -1,0 +1,88 @@
+<?php
+/**
+ * aheadWorks Co.
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the EULA
+ * that is bundled with this package in the file LICENSE.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://ecommerce.aheadworks.com/AW-LICENSE.txt
+ *
+ * =================================================================
+ *                 MAGENTO EDITION USAGE NOTICE
+ * =================================================================
+ * This software is designed to work with Magento community edition and
+ * its use on an edition other than specified is prohibited. aheadWorks does not
+ * provide extension support in case of incorrect edition use.
+ * =================================================================
+ *
+ * @category   AW
+ * @package    AW_Onestepcheckout
+ * @version    1.2.5
+ * @copyright  Copyright (c) 2010-2012 aheadWorks Co. (http://www.aheadworks.com)
+ * @license    http://ecommerce.aheadworks.com/AW-LICENSE.txt
+ */
+?><div id="aw-onestepcheckout-review-cart">
+    <div id="aw-onestepcheckout-review-table-cart-wrapper">
+        <?php echo $this->getHelperTimerBlockHtml();?>
+        <table class="aw-onestepcheckout-cart-table">
+            <col />
+            <col width="1" />
+            <col width="1" />
+            <thead>
+                <tr>
+                    <th class="name a-left"><?php echo $this->__('Item Description') ?></th>
+                    <th class="color a-left"><?php echo $this->__('Color') ?></th>
+                    <th class="size a-left"><?php echo $this->__('Size') ?></th>
+                    <th class="qty a-left"><?php echo $this->__('Qty.') ?></th>
+                    <th class="total a-right"><?php echo $this->__('Unit Price') ?></th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach($this->getItems() as $_item): ?>
+                    <?php echo $this->getItemHtml($_item)?>
+                <?php endforeach ?>
+            </tbody>
+        </table>
+		<table class="aw-onestepcheckout-cart-table-total">
+            <?php echo $this->getChildHtml('totals'); ?>
+		</table>
+		<script>
+		$j(document).ready(function(){
+		     
+			$j(".aw-onestepcheckout-cart-table-total tfoot tr td").each(function(){
+				if($j(this).html().trim() == "Unique Code"){
+					$j(this).parent().addClass( "uniqecode");
+					$j(".aw-onestepcheckout-cart-table-total tfoot tr:eq(1) td:first-child").css('text-align','left');					
+					$j(".aw-onestepcheckout-cart-table-total tfoot tr:eq(1) td:first-child").removeClass('a-right');	
+					$j(".aw-onestepcheckout-cart-table-total tfoot tr:eq(2) td:first-child").css('text-align','left');					
+					$j(".aw-onestepcheckout-cart-table-total tfoot tr:eq(2) td:first-child").removeClass('a-right');	
+                    $j(".aw-onestepcheckout-cart-table-total tfoot tr:eq(3) td:last-child").css('text-align','right');					
+					$j(".aw-onestepcheckout-cart-table-total tfoot tr:eq(3) td:last-child").removeClass('a-left');  																			
+					$j("#checkout-payment-method-load input[name='payment[method]']").each(function(){
+						if($j(this).is(":checked") && $j(this).val() == "<?php echo Mage_Payment_Model_Method_Banktransfer::PAYMENT_METHOD_BANKTRANSFER_CODE ?>" ){$j(".uniqecode").show();}
+						if($j(this).is(":checked") && $j(this).val() == "<?php echo Icube_Bcabanktransfer_Model_Bcabanktransfer::PAYMENT_METHOD_BCABANKTRANSFER_CODE ?>"){$j(".uniqecode").show();}
+						if($j(this).is(":checked") && $j(this).val() == "<?php echo Icube_Mandiribanktransfer_Model_Mandiribanktransfer::PAYMENT_METHOD_MANDIRIBANKTRANSFER_CODE ?>"){$j(".uniqecode").show();}
+					});
+				}
+			});
+		});
+		</script>
+		<div class="clear"></div>
+    </div>
+</div>
+<script type="text/javascript">
+    var awOSCReviewCartBlock = new AWOnestepcheckoutReviewCart({
+        containerSelector: "#aw-onestepcheckout-review-cart",
+        relatedBlockContainerSelector: "#aw-onestepcheckout-related",
+        useForShippingCheckboxContainerSelector: "#aw-onestepcheckout-billing-use-for-shipping",
+        removeLinkSelector: ".aw-onestepcheckout-cart-table a.btn-remove2",
+        urlToUpdateBlocksAfterACP: <?php echo Zend_Json::encode($this->getUrlToUpdateBlocksAfterACP()); ?>,
+        overlayConfig: {
+            '48px': 'aw-onestepcheckout-overlay aw-onestepcheckout-overlay-48',
+            '24px': 'aw-onestepcheckout-overlay aw-onestepcheckout-overlay-24',
+            '16px': 'aw-onestepcheckout-overlay aw-onestepcheckout-overlay-16'
+        }
+    });
+</script>
